@@ -35,6 +35,7 @@ public class ProductService {
             product.setPrice(updatedProduct.getPrice());
             product.setCategory(updatedProduct.getCategory());
             product.setImages(updatedProduct.getImages());
+            product.setQuantity(updatedProduct.getQuantity());
             return repository.save(product);
         }).orElseThrow(() -> new RuntimeException("Product not found"));
     }

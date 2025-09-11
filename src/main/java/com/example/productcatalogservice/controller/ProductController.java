@@ -1,6 +1,9 @@
 package com.example.productcatalogservice.controller;
 
 import com.example.productcatalogservice.model.Product;
+import com.example.productcatalogservice.repository.ProductRepository;
+import com.example.productcatalogservice.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +13,10 @@ import java.util.List;
 @RequestMapping("/products")
 public class ProductController {
 
-    private final com.example.productcatalogservice.service.ProductService service;
+    private final ProductService service;
+
+    @Autowired
+    private ProductRepository repository;
 
     public ProductController(com.example.productcatalogservice.service.ProductService service) {
         this.service = service;
@@ -43,4 +49,26 @@ public class ProductController {
         service.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/availability")
+    public boolean checkAvailability(@PathVariable String id) {
+        Product product = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return product.getQuantity() > 0;
+    }
+
+    @PutMapping("/{id}/reduce-stock/{qty}")
+    public Product reduceStock(@PathVariable String id, @PathVariable int qty) {
+        Product product = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (product.getQuantity() < qty) {
+            throw new RuntimeException("Insufficient stock");
+        }
+
+        product.setQuantity(product.getQuantity() - qty);
+        return repository.save(product);
+    }
+
+
 }
